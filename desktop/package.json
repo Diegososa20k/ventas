@@ -1,0 +1,24 @@
+{
+  "name": "ventas-desktop",
+  "version": "1.0.1",
+  "description": "Sistema de ventas",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.ventas.app",
+    "productName": "Ventas",
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12"
+  }
+}

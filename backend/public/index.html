@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" ng-app="ventasApp">
+<head>
+  <meta charset="UTF-8">
+  <title>Ventas - Programa</title>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+  rel="stylesheet">
+<!-- AngularJS -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+
+<!-- UI Router -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/1.0.30/angular-ui-router.min.js"></script>
+
+<!-- Resource -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-resource.min.js"></script>
+
+<script src="js/app.js"></script>
+<script src="js/controllers/productosCtrl.js"></script>
+<script src="js/services/productosFactory.js"></script>
+
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div class="container-fluid p-0 d-flex">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h3>Menú</h3>
+      <ul>
+        <li><a ui-sref="principal">Inicio</a></li>
+        <li><a ui-sref="productos">Productos</a></li>
+      </ul>
+    </aside>
+
+    <!-- Contenido -->
+    <main class="content flex-fill p-4">
+      <div ui-view></div>
+    </main>
+
+  </div>
+
+</body>
+
+</html>

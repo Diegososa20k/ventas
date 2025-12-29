@@ -17,3 +17,9 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+
+#Lo nuevo que agrego
+node_modules
+.env
+

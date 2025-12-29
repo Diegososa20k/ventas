@@ -1,0 +1,33 @@
+<h2>Productos</h2>
+
+
+<h3>Nuevo producto</h3>
+
+<input type="text" ng-model="nuevo.nombre" placeholder="Nombre">
+<input type="number" ng-model="nuevo.precio" placeholder="Precio">
+
+<button class="btn btn-primary" ng-click="guardar()">Guardar</button>
+
+
+
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Creado</th>
+      <th>Precio</th>
+
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="p in productos">
+      <td>{{ p.id }}</td>
+      <td>{{ p.nombre }}</td>
+      <td>{{ p.created_at | date:'yyyy-MM-dd HH:mm' }}</td>
+      <td>{{ p.precio | currency }}</td>
+
+    </tr>
+  </tbody>
+</table>
