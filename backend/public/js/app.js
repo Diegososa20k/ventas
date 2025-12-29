@@ -40,6 +40,21 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
       templateUrl: 'views/productos.html',
       controller: 'productosCtrl',
       requiresLogin: true
-    });
+    })
+
+    .state('descargar', {
+      url: '/descargar',
+      templateUrl: 'views/descargar.html',
+      controller: 'descargarCtrl',
+      requiresLogin: true
+    })
+
+    .state('musica', {
+      url: '/musica',
+      templateUrl: 'views/musica.html',
+      controller: 'musicaCtrl',
+      requiresLogin: true
+    })
+
 
 });

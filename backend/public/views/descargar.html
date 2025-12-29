@@ -1,0 +1,28 @@
+<h2>Descargar desde YouTube</h2>
+
+<div class="mb-3">
+  <label>Link de YouTube</label>
+  <input type="text" class="form-control"
+         ng-model="form.youtube_url"
+         placeholder="https://youtube.com/...">
+</div>
+
+<div class="mb-3">
+  <label>Nombre del archivo</label>
+  <input type="text" class="form-control"
+         ng-model="form.nombre"
+         placeholder="Mi canción">
+</div>
+
+<div class="mb-3">
+  <label>Formato</label>
+  <select class="form-select" ng-model="form.formato">
+    <option value="mp3">MP3</option>
+    <option value="mp4">MP4</option>
+    <option value="ambas">Ambas</option>
+  </select>
+</div>
+
+<button class="btn btn-primary" ng-click="descargar()">
+  Descargar
+</button>

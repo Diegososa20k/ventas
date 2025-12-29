@@ -16,6 +16,13 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // Rutas API
 app.use('/productos', require('./routes/productos'));
+app.use('/descargas', require('./routes/descargas'));
+app.use('/playlists', require('./routes/playlists'));
+
+
+
+// Servir archivos descargados
+app.use('/media', express.static(path.join(__dirname, '../downloads')));
 
 // Catch-all SPA (EXPRESS 5 COMPATIBLE)
 app.use((req, res) => {
