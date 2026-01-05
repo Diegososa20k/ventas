@@ -8,6 +8,11 @@ module.exports = (sequelize, DataTypes) => {
     nombre: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    favorito: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false
     }
   }, {
     tableName: 'playlists',

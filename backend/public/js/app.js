@@ -1,16 +1,28 @@
 var app = angular.module('ventasApp', [
   'ui.router',
-  'ngResource'
+  'ngResource',
+  'ui.bootstrap'
 ]);
 
 app.constant('API_URL', 'http://localhost:3000');
+
+/* ============================
+   CONTROLADOR PRINCIPAL
+============================ */
+app.controller('mainCtrl', function($scope) {
+  $scope.sidebarCollapsed = false;
+  
+  $scope.toggleSidebar = function() {
+    $scope.sidebarCollapsed = !$scope.sidebarCollapsed;
+    console.log('Sidebar collapsed:', $scope.sidebarCollapsed);
+  };
+});
 
 /* ============================
    CONFIGURACIÓN
 ============================ */
 app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
 
-  /* 🔐 INTERCEPTOR (opcional, listo para JWT) */
   $httpProvider.interceptors.push(function($window) {
     return {
       request: function(config) {
@@ -23,10 +35,8 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
     };
   });
 
-  // Ruta por defecto
   $urlRouterProvider.otherwise('/principal');
 
-  /* 📌 STATES */
   $stateProvider
 
     .state('principal', {
@@ -54,7 +64,6 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
       templateUrl: 'views/musica.html',
       controller: 'musicaCtrl',
       requiresLogin: true
-    })
-
+    });
 
 });

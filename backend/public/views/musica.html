@@ -1,111 +1,1252 @@
-<h2>Mi música</h2>
+<h2 class="page-title">🎵 Mi música</h2>
 
-<div class="mb-3">
-  <label>Tipo</label>
-  <select class="form-select" ng-model="tipo" ng-change="cargar()">
-    <option value="musica">Música</option>
-    <option value="video">Videos</option>
+<div class="mb-4">
+  <label class="form-label fw-bold">Tipo de contenido</label>
+  <select class="form-select form-select-modern" ng-model="tipo" ng-change="cargar()">
+    <option value="musica">🎵 Música</option>
+    <option value="video">🎬 Videos</option>
   </select>
 </div>
 
-<ul class="list-group mb-4">
-  <li class="list-group-item d-flex justify-content-between align-items-center"
-      ng-repeat="item in lista">
+<!-- BARRA DE PLAYLISTS CON BÚSQUEDA Y ELIMINAR -->
+<div class="mb-4" ng-if="playlists.length > 0">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <label class="mb-0 fw-bold">📋 Mis Playlists</label>
+    
+    <div class="d-flex gap-2">
+      <!-- Buscador -->
+      <div class="search-input-container">
+        <input type="text" 
+               class="form-control form-control-sm search-input" 
+               placeholder="🔍 Buscar playlist..."
+               ng-model="buscarPlaylist"
+               ng-change="filtrarPlaylists()">
+      </div>
+      
+      <!-- Botón eliminar -->
+      <button class="btn btn-sm btn-eliminar-mode" 
+              ng-click="modoEliminarPlaylist = !modoEliminarPlaylist"
+              ng-class="{'active': modoEliminarPlaylist}">
+        <span ng-if="!modoEliminarPlaylist">🗑️ Eliminar</span>
+        <span ng-if="modoEliminarPlaylist">✖️ Cancelar</span>
+      </button>
+    </div>
+  </div>
+  
+  <!-- CHIPS DE PLAYLISTS -->
+  <div class="chips-container">
+    <!-- Chip "Todas" -->
+    <div class="chip chip-todas" 
+         ng-class="{'chip-active': playlistSeleccionada === null}"
+         ng-click="seleccionarPlaylist(null)"
+         ng-if="!modoEliminarPlaylist">
+      🎵 Todas
+    </div>
+    
+    <!-- EN MODO NORMAL -->
+    <div ng-if="!modoEliminarPlaylist" style="display: contents;">
+      <!-- Primeros 5 chips -->
+      <div class="chip chip-favoritable" 
+           ng-class="{'chip-active': playlistSeleccionada === pl.id, 'chip-favorito': pl.favorito}"
+           ng-repeat="pl in playlistsFiltradas.slice(0, maxChipsVisible)">
+        <span class="favorito-icon" 
+              ng-click="toggleFavorito(pl, $event)"
+              title="{{ pl.favorito ? 'Quitar de favoritos' : 'Marcar como favorito' }}">
+          {{ pl.favorito ? '⭐' : '☆' }}
+        </span>
+        <span ng-click="seleccionarPlaylist(pl.id)" class="chip-nombre">
+          🎶 {{ pl.nombre }}
+        </span>
+      </div>
+      
+      <!-- Chip adicional del dropdown -->
+      <div class="chip chip-active chip-from-dropdown chip-favoritable" 
+           ng-if="playlistSeleccionadaDelDropdown">
+        <span class="favorito-icon" 
+              ng-click="toggleFavorito(playlistSeleccionadaDelDropdown, $event)"
+              title="{{ playlistSeleccionadaDelDropdown.favorito ? 'Quitar de favoritos' : 'Marcar como favorito' }}">
+          {{ playlistSeleccionadaDelDropdown.favorito ? '⭐' : '☆' }}
+        </span>
+        <span ng-click="seleccionarPlaylist(playlistSeleccionadaDelDropdown.id)" class="chip-nombre">
+          🎶 {{ playlistSeleccionadaDelDropdown.nombre }}
+        </span>
+      </div>
+      
+      <!-- Dropdown -->
+      <div class="dropdown" ng-if="playlistsFiltradas.length > maxChipsVisible">
+        <div class="chip chip-dropdown" 
+             data-bs-toggle="dropdown" 
+             aria-expanded="false">
+          ➕ Más playlists... ({{ playlistsFiltradas.length - maxChipsVisible - (playlistSeleccionadaDelDropdown ? 1 : 0) }})
+        </div>
+        <ul class="dropdown-menu dropdown-menu-playlists">
+          <li ng-repeat="pl in playlistsFiltradas.slice(maxChipsVisible)">
+            <a class="dropdown-item" 
+               ng-click="seleccionarPlaylistDelDropdown(pl.id)"
+               ng-class="{'active': playlistSeleccionada === pl.id}">
+              🎶 {{ pl.nombre }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- EN MODO ELIMINAR -->
+    <div ng-if="modoEliminarPlaylist" style="display: contents;">
+      <div class="chip chip-eliminar" 
+           ng-repeat="pl in playlistsFiltradas"
+           ng-click="confirmarEliminarPlaylist(pl)">
+        ❌ {{ pl.nombre }}
+      </div>
+    </div>
+  </div>
+  
+  <!-- Mensaje si no hay resultados -->
+  <div ng-if="buscarPlaylist && playlistsFiltradas.length === 0" class="alert alert-warning-custom mt-3">
+    <span class="alert-icon">⚠️</span>
+    <span>No se encontraron playlists con "{{ buscarPlaylist }}"</span>
+  </div>
+</div>
 
-    <!-- Nombre / reproducir -->
-    <span ng-click="reproducir(item)" class="item-nombre">
-      🎵 {{ item.nombre }}
-    </span>
+<!-- LISTA DE CANCIONES -->
+<div class="canciones-container">
+  <ul class="list-group list-group-modern">
+    <li class="list-group-item list-item-modern"
+        ng-repeat="item in lista"
+        ng-class="{'cancion-reproduciendo': seleccionado && seleccionado.id === item.id}">
 
-    <!-- 3 puntos SIN botón -->
-    <span class="menu-3puntos"
-          ng-click="abrirMenuPlaylist(item, $event)">
-      ⋮
-    </span>
+      <!-- Nombre / reproducir -->
+      <div class="cancion-info-item" ng-click="reproducir(item)">
+        <!-- Indicador de reproducción -->
+        <span class="cancion-icon" ng-class="{'icon-playing': seleccionado && seleccionado.id === item.id}">
+          <span ng-if="seleccionado && seleccionado.id === item.id && isPlaying" class="playing-animation">
+            <span class="bar bar1"></span>
+            <span class="bar bar2"></span>
+            <span class="bar bar3"></span>
+          </span>
+          <span ng-if="!(seleccionado && seleccionado.id === item.id && isPlaying)">🎵</span>
+        </span>
+        <span class="cancion-nombre">{{ item.nombre }}</span>
+        
+        <!-- Badge "Reproduciendo" -->
+        <span class="badge-reproduciendo" ng-if="seleccionado && seleccionado.id === item.id">
+          <span class="pulse-dot"></span>
+          {{ isPlaying ? 'Reproduciendo' : 'Pausado' }}
+        </span>
+      </div>
 
-  </li>
-</ul>
+      <!-- Menú de 3 puntos -->
+      <div class="menu-3puntos-modern"
+           ng-click="abrirMenuPlaylist(item, $event)">
+        <span class="dots">⋮</span>
+      </div>
 
-<!-- MENÚ FLOTANTE -->
-<div class="playlist-menu"
+    </li>
+  </ul>
+</div>
+
+<!-- Mensaje cuando no hay canciones -->
+<div ng-if="lista.length === 0" class="mensaje-vacio-lista">
+  <div class="icono-vacio-lista">
+    <span ng-if="playlistSeleccionada">📭</span>
+    <span ng-if="!playlistSeleccionada">🎵</span>
+  </div>
+  <p class="mb-1" ng-if="playlistSeleccionada">Esta playlist está vacía</p>
+  <p class="mb-1" ng-if="!playlistSeleccionada">No hay {{ tipo === 'musica' ? 'música' : 'videos' }} disponibles</p>
+  <small class="text-muted">Agrega contenido para comenzar</small>
+</div>
+
+<!-- MENÚ FLOTANTE MEJORADO -->
+<div class="playlist-menu-modern"
      ng-if="menuPlaylist"
-     ng-style="menuStyle">
+     ng-style="menuStyle"
+     ng-click="$event.stopPropagation()">
 
-  <div class="playlist-item"
+  <div class="menu-header">
+    <span class="menu-icon">🎵</span>
+    <span class="menu-title">{{ menuPlaylist.nombre }}</span>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <div class="playlist-item-modern"
        ng-click="nuevaPlaylist(menuPlaylist)">
-    ➕ Nueva playlist
+    <span class="item-icon">➕</span>
+    <span>Nueva playlist</span>
   </div>
 
-  <div class="playlist-item"
-       ng-repeat="pl in playlists"
-       ng-click="agregarAPlaylist(menuPlaylist, pl)">
-    🎶 {{ pl.nombre }}
+  <div class="menu-divider"></div>
+
+  <div class="menu-section-title">Agregar a playlist:</div>
+
+  <div class="playlist-items-scroll">
+    <div class="playlist-item-modern"
+         ng-repeat="pl in playlists"
+         ng-click="agregarAPlaylist(menuPlaylist, pl)"
+         ng-class="{'item-added': estaEnPlaylist(pl.id)}">
+      <span class="item-icon">
+        <span ng-if="estaEnPlaylist(pl.id)">✓</span>
+        <span ng-if="!estaEnPlaylist(pl.id)">🎶</span>
+      </span>
+      <span class="item-text">{{ pl.nombre }}</span>
+    </div>
   </div>
 
-  <div class="playlist-item text-danger"
+  <div class="menu-divider"></div>
+
+  <div class="playlist-item-modern item-danger"
        ng-click="eliminar(menuPlaylist)">
-    🗑 Eliminar
+    <span class="item-icon">🗑️</span>
+    <span>Eliminar archivo</span>
   </div>
 
-  <div class="playlist-item text-danger"
+  <div class="playlist-item-modern item-primary"
+       ng-click="abrirModalGestionarPlaylists(menuPlaylist)">
+    <span class="item-icon">⚙️</span>
+    <span>Gestionar playlists</span>
+  </div>
+
+  <div class="menu-divider"></div>
+
+  <div class="playlist-item-modern item-cancel"
        ng-click="cerrarMenu()">
-    ✖ Cancelar
+    <span class="item-icon">✖️</span>
+    <span>Cancelar</span>
   </div>
 
 </div>
 
-<div ng-if="seleccionado">
-  <h5>Reproduciendo: {{ seleccionado.nombre }}</h5>
+<!-- OVERLAY -->
+<div class="playlist-overlay" 
+     ng-if="menuPlaylist"
+     ng-click="cerrarMenu()">
+</div>
 
+<!-- REPRODUCTOR -->
+<div ng-if="seleccionado" class="player-container-modern">
+  <div class="player-header">
+    <span class="now-playing-label">Reproduciendo ahora</span>
+    <h5 class="player-title">{{ seleccionado.nombre }}</h5>
+  </div>
+
+  <!-- CONTROLES -->
+  <div class="player-controls">
+    <button ng-click="anterior()" class="btn-control btn-prev">
+      <span>⏮</span>
+    </button>
+    
+    <button ng-click="togglePlayPause()" class="btn-control btn-play">
+      <span>{{ isPlaying ? '⏸' : '▶' }}</span>
+    </button>
+    
+    <button ng-click="siguiente()" class="btn-control btn-next">
+      <span>⏭</span>
+    </button>
+    
+    <button ng-click="toggleRepeat()"
+            class="btn-control btn-repeat"
+            ng-class="{'active': repeat}">
+      <span>🔁</span>
+    </button>
+    
+    <button ng-click="toggleShuffle()"
+            class="btn-control btn-shuffle"
+            ng-class="{'active': shuffle}">
+      <span>🔀</span>
+    </button>
+  </div>
+
+  <!-- BARRA DE PROGRESO -->
+  <div class="progress-container-modern">
+    <div class="time-display">
+      <span class="time-current">0:00</span>
+      <span class="time-duration">0:00</span>
+    </div>
+    
+    <div class="progress-bar-wrapper" ng-click="clickSeek($event)">
+      <div class="progress-visual">
+        <div class="progress-fill"></div>
+      </div>
+      
+      <input type="range"
+             min="0"
+             max="{{ duration || 0 }}"
+             step="0.1"
+             ng-model="currentTime"
+             ng-mousedown="startSeeking()"
+             ng-mouseup="stopSeeking()"
+             ng-touchstart="startSeeking()"
+             ng-touchend="stopSeeking()"
+             ng-change="onSliderChange()"
+             class="progress-slider">
+    </div>
+  </div>
+
+  <!-- CONTROL DE VOLUMEN -->
+  <div class="volume-container-modern">
+    <span class="volume-icon">🔊</span>
+    <input type="range"
+           min="0"
+           max="1"
+           step="0.01"
+           ng-model="volume"
+           ng-change="changeVolume()"
+           class="volume-slider">
+    <span class="volume-label">{{ (volume * 100).toFixed(0) }}%</span>
+  </div>
+
+  <!-- AUDIO/VIDEO -->
   <audio ng-if="tipo === 'musica'"
-       ng-src="{{ mediaUrl }}"
-       controls
-       class="w-100">
-</audio>
-
+         id="player"
+         ng-src="{{ mediaUrl }}"
+         autoplay>
+  </audio>
 
   <video ng-if="tipo === 'video'"
+         id="player"
          ng-src="{{ mediaUrl }}"
-         controls
-         class="w-100"
-         height="360">
+         autoplay
+         class="video-player">
   </video>
+
 </div>
 
+
 <style>
-.item-nombre {
-  cursor: pointer;
+/* ========== ESTILOS GENERALES ========== */
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 25px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.menu-3puntos {
+.form-select-modern {
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 15px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-select-modern:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-label {
+  color: #4a5568;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* ========== BUSCADOR ========== */
+.search-input-container {
+  position: relative;
+}
+
+.search-input {
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 8px 16px;
+  width: 220px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  width: 260px;
+}
+
+/* ========== BOTÓN ELIMINAR MODE ========== */
+.btn-eliminar-mode {
+  border: 2px solid #fc8181;
+  background: white;
+  color: #e53e3e;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-eliminar-mode:hover {
+  background: #fff5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.2);
+}
+
+.btn-eliminar-mode.active {
+  background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+  color: white;
+  border-color: #e53e3e;
+}
+
+/* ========== CHIPS ========== */
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 4px 8px;
-  font-size: 18px;
+  transition: all 0.3s ease;
   user-select: none;
-  color: #555;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.menu-3puntos:hover {
-  background: #eee;
-  border-radius: 50%;
+.chip-todas {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
 }
 
-.playlist-menu {
-  position: fixed;
-  background: #fff;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 12px rgba(0,0,0,.15);
-  border-radius: 6px;
-  width: 200px;
-  z-index: 9999;
+.chip-favoritable {
+  gap: 8px;
+  padding: 8px 14px 8px 8px;
 }
 
-.playlist-item {
-  padding: 8px 12px;
+.chip-favoritable .chip-nombre {
   cursor: pointer;
+  flex: 1;
 }
 
-.playlist-item:hover {
-  background: #f1f1f1;
+.chip-favoritable .favorito-icon {
+  cursor: pointer;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.chip-favoritable .favorito-icon:hover {
+  background: rgba(255, 193, 7, 0.15);
+  transform: scale(1.15) rotate(15deg);
+}
+
+.chip:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.chip-active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.chip-active:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.chip-favorito.chip-active {
+  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+  border-color: #ed8936;
+  box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
+}
+
+.chip-eliminar {
+  background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+  border-color: #e53e3e;
+  color: white;
+  animation: pulseDelete 2s ease-in-out infinite;
+}
+
+.chip-eliminar:hover {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+  transform: scale(0.98);
+}
+
+@keyframes pulseDelete {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(229, 62, 62, 0.5);
+  }
+}
+
+.chip-from-dropdown {
+  animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6) !important;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.chip-dropdown {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  border-color: #3182ce;
+}
+
+.chip-dropdown:hover {
+  background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+}
+
+/* ========== DROPDOWN MENU ========== */
+.dropdown-menu-playlists {
+  max-height: 320px;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  border: none;
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.dropdown-menu-playlists .dropdown-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.dropdown-menu-playlists .dropdown-item:hover {
+  background: #f7fafc;
+  transform: translateX(5px);
+}
+
+.dropdown-menu-playlists .dropdown-item.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+/* ========== ALERT CUSTOM ========== */
+.alert-warning-custom {
+  background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
+  border: 2px solid #f39c12;
+  border-radius: 12px;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);
+}
+
+.alert-icon {
+  font-size: 24px;
+}
+
+/* ========== LISTA DE CANCIONES ========== */
+.canciones-container {
+  margin-bottom: 30px;
+}
+
+.list-group-modern {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.list-item-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.list-item-modern:last-child {
+  border-bottom: none;
+}
+
+.list-item-modern:hover {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  transform: translateX(5px);
+}
+
+.cancion-info-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.cancion-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.cancion-nombre {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 15px;
+}
+
+.menu-3puntos-modern {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-3puntos-modern .dots {
+  font-size: 22px;
+  color: #718096;
+  font-weight: bold;
+}
+
+.menu-3puntos-modern:hover {
+  background: #e2e8f0;
+  transform: scale(1.1);
+}
+
+/* ========== MENSAJE VACÍO LISTA ========== */
+.mensaje-vacio-lista {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 16px;
+  border: 2px dashed #cbd5e0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.icono-vacio-lista {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.mensaje-vacio-lista p {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 18px;
+}
+
+/* ========== MENÚ FLOTANTE MEJORADO ========== */
+.playlist-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9998;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.playlist-menu-modern {
+  position: fixed;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  width: 280px;
+  z-index: 9999;
+  max-height: 500px;
+  overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  border: 2px solid #e2e8f0;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.menu-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 14px 14px 0 0;
+}
+
+.menu-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.menu-title {
+  flex: 1;
+  font-weight: 700;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menu-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #e2e8f0 50%, transparent 100%);
+  margin: 8px 0;
+}
+
+.menu-section-title {
+  padding: 12px 20px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.playlist-items-scroll {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.playlist-items-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.playlist-items-scroll::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 10px;
+}
+
+.playlist-items-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+.playlist-items-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.playlist-item-modern {
+  padding: 14px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  margin: 0 8px;
+  border-radius: 10px;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.playlist-item-modern:hover {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  transform: translateX(5px);
+}
+
+.item-icon {
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7fafc;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.playlist-item-modern:hover .item-icon {
+  background: #e2e8f0;
+  transform: scale(1.1);
+}
+
+.item-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-added {
+  background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+  color: #22543d;
+}
+
+.item-added .item-icon {
+  background: rgba(34, 84, 61, 0.1);
+}
+
+.item-added:hover {
+  background: linear-gradient(135deg, #9ae6b4 0%, #68d391 100%);
+}
+
+.item-danger {
+  color: #e53e3e;
+}
+
+.item-danger .item-icon {
+  background: #fff5f5;
+}
+
+.item-danger:hover {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+}
+
+.item-primary {
+  color: #3182ce;
+}
+
+.item-primary .item-icon {
+  background: #ebf8ff;
+}
+
+.item-primary:hover {
+  background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+}
+
+.item-cancel {
+  color: #718096;
+}
+
+.item-cancel .item-icon {
+  background: #edf2f7;
+}
+
+.item-cancel:hover {
+  background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+}
+
+/* ========== REPRODUCTOR MEJORADO ========== */
+.player-container-modern {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  margin-top: 30px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  border: 2px solid #e2e8f0;
+}
+
+.player-header {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.now-playing-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #718096;
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-bottom: 8px;
+}
+.player-title {
+font-size: 20px;
+font-weight: 700;
+color: #2d3748;
+margin: 0;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+}
+.player-controls {
+display: flex;
+justify-content: center;
+align-items: center;
+gap: 15px;
+margin-bottom: 30px;
+}
+.btn-control {
+width: 50px;
+height: 50px;
+border: none;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.3s ease;
+background: #f7fafc;
+color: #2d3748;
+font-size: 20px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.btn-control:hover {
+transform: translateY(-3px) scale(1.05);
+box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+.btn-play {
+width: 65px;
+height: 65px;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+color: white;
+font-size: 26px;
+box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+.btn-play:hover {
+box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+}
+.btn-control.active {
+background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+color: white;
+box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+}
+.progress-container-modern {
+margin: 25px 0;
+}
+.time-display {
+display: flex;
+justify-content: space-between;
+font-size: 13px;
+font-weight: 600;
+color: #4a5568;
+margin-bottom: 10px;
+}
+.progress-bar-wrapper {
+position: relative;
+height: 45px;
+display: flex;
+align-items: center;
+cursor: pointer;
+}
+.progress-visual {
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
+width: 100%;
+height: 10px;
+background: #e2e8f0;
+border-radius: 10px;
+pointer-events: none;
+z-index: 1;
+box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+.progress-fill {
+height: 100%;
+background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+border-radius: 10px;
+transition: width 0.1s linear;
+position: relative;
+width: 0%;
+box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+.progress-fill::after {
+content: '';
+position: absolute;
+right: -10px;
+top: 50%;
+transform: translateY(-50%);
+width: 20px;
+height: 20px;
+background: white;
+border: 3px solid #667eea;
+border-radius: 50%;
+box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+}
+.progress-slider {
+position: absolute;
+width: 100%;
+height: 45px;
+cursor: pointer;
+z-index: 2;
+opacity: 0;
+margin: 0;
+}
+.progress-slider::-webkit-slider-thumb {
+opacity: 1;
+width: 20px;
+height: 20px;
+cursor: pointer;
+}
+.volume-container-modern {
+display: flex;
+align-items: center;
+gap: 15px;
+max-width: 250px;
+margin: 0 auto;
+padding: 15px 20px;
+background: #f7fafc;
+border-radius: 15px;
+}
+.volume-icon {
+font-size: 22px;
+}
+.volume-slider {
+flex: 1;
+cursor: pointer;
+height: 6px;
+border-radius: 10px;
+background: #e2e8f0;
+}
+.volume-slider::-webkit-slider-thumb {
+width: 18px;
+height: 18px;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+border-radius: 50%;
+cursor: pointer;
+box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+.volume-slider::-moz-range-thumb {
+width: 18px;
+height: 18px;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+border-radius: 50%;
+cursor: pointer;
+border: none;
+box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+.volume-label {
+font-size: 13px;
+font-weight: 700;
+color: #4a5568;
+min-width: 45px;
+text-align: right;
+}
+.video-player {
+width: 100%;
+max-width: 700px;
+margin: 20px auto 0;
+border-radius: 16px;
+box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+.search-input {
+width: 160px;
+}
+.search-input:focus {
+width: 180px;
+}
+.playlist-menu-modern {
+width: 90%;
+max-width: 320px;
+}
+.player-container-modern {
+padding: 20px;
+}
+.btn-control {
+width: 45px;
+height: 45px;
+font-size: 18px;
+}
+.btn-play {
+width: 60px;
+height: 60px;
+font-size: 24px;
+}
+}
+
+
+/* ========== CANCIÓN REPRODUCIENDO ========== */
+.cancion-reproduciendo {
+  background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%) !important;
+  border-left: 4px solid #667eea !important;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.cancion-reproduciendo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(102, 126, 234, 0.05) 50%, 
+    transparent 100%);
+  animation: shimmer 3s infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.cancion-reproduciendo:hover {
+  background: linear-gradient(135deg, #dce7ff 0%, #e6dcff 100%) !important;
+  transform: translateX(8px) !important;
+}
+
+.icon-playing {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  }
+}
+
+/* Animación de barras de audio */
+.playing-animation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 20px;
+}
+
+.bar {
+  width: 3px;
+  background: white;
+  border-radius: 3px;
+  animation: sound 0.5s ease-in-out infinite;
+}
+
+.bar1 {
+  animation-delay: 0s;
+  height: 8px;
+}
+
+.bar2 {
+  animation-delay: 0.2s;
+  height: 14px;
+}
+
+.bar3 {
+  animation-delay: 0.4s;
+  height: 10px;
+}
+
+@keyframes sound {
+  0%, 100% {
+    height: 8px;
+  }
+  50% {
+    height: 18px;
+  }
+}
+
+/* Badge de reproduciendo */
+.badge-reproduciendo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  animation: fadeInBadge 0.3s ease-out;
+}
+
+@keyframes fadeInBadge {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  animation: pulseDot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* Ajuste de la canción info cuando está reproduciendo */
+.cancion-reproduciendo .cancion-info-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.cancion-reproduciendo .cancion-nombre {
+  color: #667eea;
+  font-weight: 700;
 }
 </style>

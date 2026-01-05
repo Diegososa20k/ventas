@@ -1,0 +1,333 @@
+<div class="modal-header bg-gradient-primary text-white">
+  <h5 class="modal-title">
+    <i class="fas fa-list-music"></i> Gestionar Playlists
+  </h5>
+  <button type="button" class="btn-close btn-close-white" ng-click="cancelar()"></button>
+</div>
+
+<div class="modal-body modal-gestionar-playlists">
+
+  <!-- Información de la canción -->
+  <div class="cancion-info">
+    <div class="cancion-icon">🎵</div>
+    <div class="cancion-detalles">
+      <h6 class="mb-1">{{ cancion.nombre }}</h6>
+      <small class="text-muted">
+        {{ playlistsConCancion.length }} 
+        {{ playlistsConCancion.length === 1 ? 'playlist' : 'playlists' }}
+      </small>
+    </div>
+  </div>
+
+  <hr class="my-3">
+
+  <p class="section-title">
+    <i class="fas fa-music"></i> Playlists que contienen esta canción:
+  </p>
+
+  <!-- Lista de playlists -->
+  <div class="playlists-container" ng-if="playlistsConCancion.length > 0">
+    <div class="playlist-item-modal" ng-repeat="pl in playlistsConCancion">
+      <div class="playlist-info">
+        <span class="playlist-icon">🎶</span>
+        <span class="playlist-nombre">{{ pl.nombre }}</span>
+      </div>
+
+      <button class="btn-eliminar-playlist"
+              ng-click="eliminarDePlaylist(pl)"
+              title="Eliminar de esta playlist">
+        ❌
+      </button>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay playlists -->
+  <div class="mensaje-vacio" ng-if="playlistsConCancion.length === 0">
+    <div class="icono-vacio">✅</div>
+    <p class="mb-0">Esta canción ya no está en ninguna playlist</p>
+    <small class="text-muted">La canción sigue disponible en tu biblioteca</small>
+  </div>
+
+</div>
+
+<div class="modal-footer bg-light">
+  <button class="btn btn-secondary" ng-click="cerrar()">
+    <i class="fas fa-times"></i> Cerrar
+  </button>
+</div>
+
+<style>
+/* Estilos del modal gestionar playlists */
+.modal-gestionar-playlists {
+  padding: 25px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Información de la canción */
+.cancion-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-left: 4px solid #667eea;
+}
+
+.cancion-icon {
+  font-size: 32px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.cancion-detalles {
+  flex: 1;
+}
+
+.cancion-detalles h6 {
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+  font-size: 16px;
+}
+
+.cancion-detalles small {
+  font-size: 13px;
+  color: #718096;
+}
+
+/* Título de sección */
+.section-title {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 14px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title i {
+  color: #667eea;
+}
+
+/* Container de playlists */
+.playlists-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Scrollbar personalizado */
+.playlists-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.playlists-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.playlists-container::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+.playlists-container::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Item de playlist */
+.playlist-item-modal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 15px;
+  background: white;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+  animation: slideIn 0.3s ease-out;
+}
+
+.playlist-item-modal:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  transform: translateX(5px);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.playlist-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.playlist-icon {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+}
+
+.playlist-nombre {
+  font-weight: 500;
+  color: #2d3748;
+  font-size: 15px;
+}
+
+/* Botón eliminar */
+.btn-eliminar-playlist {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #fee;
+  color: #e53e3e;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.btn-eliminar-playlist:hover {
+  background: #e53e3e;
+  color: white;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.4);
+}
+
+.btn-eliminar-playlist:active {
+  transform: scale(0.95);
+}
+
+/* Mensaje vacío */
+.mensaje-vacio {
+  text-align: center;
+  padding: 40px 20px;
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed #cbd5e0;
+}
+
+.icono-vacio {
+  font-size: 48px;
+  margin-bottom: 15px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.mensaje-vacio p {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.mensaje-vacio small {
+  color: #718096;
+  font-size: 13px;
+}
+
+/* Footer */
+.modal-footer {
+  border-top: 2px solid #e2e8f0;
+  padding: 15px 25px;
+}
+
+.modal-footer .btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.modal-footer .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Header */
+.modal-header {
+  border-bottom: none;
+  padding: 20px 25px;
+}
+
+.modal-header .modal-title {
+  font-weight: 600;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .modal-gestionar-playlists {
+    padding: 15px;
+  }
+
+  .cancion-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .playlist-item-modal {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .playlist-info {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-eliminar-playlist {
+    width: 100%;
+  }
+}
+</style>

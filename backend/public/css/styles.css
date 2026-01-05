@@ -43,3 +43,543 @@ body {
   flex: 1;
   padding: 20px;
 }
+
+
+/* ========== RESET Y LAYOUT PRINCIPAL ========== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #f7fafc;
+  overflow-x: hidden;
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ========== SIDEBAR MODERNO ========== */
+.sidebar-modern {
+  width: 280px;
+  background: white;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1000;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  border-right: 2px solid #e2e8f0;
+}
+
+.sidebar-collapsed {
+  width: 80px;
+}
+
+/* ========== HEADER DEL SIDEBAR ========== */
+.sidebar-header {
+  padding: 25px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.sidebar-collapsed .logo-icon {
+  margin: 0 auto;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Botón Toggle */
+.btn-toggle-sidebar {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.btn-toggle-sidebar:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.sidebar-collapsed .btn-toggle-sidebar {
+  margin: 0 auto;
+}
+
+/* ========== NAVEGACIÓN ========== */
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 20px;
+  color: #4a5568;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  margin: 4px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  color: #667eea;
+  transform: translateX(5px);
+  text-decoration: none;
+}
+
+.nav-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7fafc;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.nav-link:hover .nav-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.nav-text {
+  font-size: 15px;
+  white-space: nowrap;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Estado activo */
+.nav-item.active .nav-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.nav-item.active .nav-icon {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.nav-item.active .nav-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 70%;
+  background: white;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Sidebar colapsado */
+.sidebar-collapsed .nav-link {
+  justify-content: center;
+  padding: 14px 0;
+  margin: 4px 8px;
+}
+
+.sidebar-collapsed .nav-icon {
+  margin: 0;
+}
+
+/* ========== FOOTER DEL SIDEBAR ========== */
+.sidebar-footer {
+  padding: 20px;
+  border-top: 2px solid #e2e8f0;
+  background: #f7fafc;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: fadeIn 0.3s ease;
+}
+
+.user-avatar {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #718096;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ========== CONTENIDO PRINCIPAL ========== */
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  min-height: 100vh;
+}
+
+.content-expanded {
+  margin-left: 80px;
+}
+
+.content-wrapper {
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ========== OVERLAY MÓVIL ========== */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .sidebar-modern {
+    transform: translateX(-100%);
+  }
+
+  .sidebar-modern:not(.sidebar-collapsed) {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .content-expanded {
+    margin-left: 0;
+  }
+
+  .sidebar-overlay.show {
+    display: block;
+    opacity: 1;
+  }
+
+  .btn-toggle-sidebar {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+}
+
+@media (min-width: 769px) {
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
+
+/* ========== TOOLTIPS (opcional) ========== */
+.sidebar-collapsed .nav-link {
+  position: relative;
+}
+
+.sidebar-collapsed .nav-link:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 15px;
+  padding: 8px 12px;
+  background: #2d3748;
+  color: white;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: tooltipSlide 0.2s ease;
+}
+
+@keyframes tooltipSlide {
+  from {
+    opacity: 0;
+    margin-left: 10px;
+  }
+  to {
+    opacity: 1;
+    margin-left: 15px;
+  }
+}
+
+/* ========== HEADER DEL SIDEBAR ========== */
+.sidebar-header {
+  padding: 25px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centrar el contenido */
+  border-bottom: 2px solid #e2e8f0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.logo-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  backdrop-filter: blur(10px);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+}
+
+/* Icono clickeable */
+.logo-icon-clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.logo-icon-clickable:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1) rotate(-10deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.logo-icon-clickable:active {
+  transform: scale(0.95) rotate(-5deg);
+}
+
+/* Efecto de pulso al hacer hover */
+.logo-icon-clickable::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.3);
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+.logo-icon-clickable:hover::before {
+  width: 120%;
+  height: 120%;
+  opacity: 1;
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    width: 100%;
+    height: 100%;
+    opacity: 0.6;
+  }
+  100% {
+    width: 150%;
+    height: 150%;
+    opacity: 0;
+  }
+}
+
+/* Animación cuando el sidebar está colapsado */
+.sidebar-collapsed .logo-icon {
+  margin: 0 auto;
+  width: 45px;
+  height: 45px;
+  font-size: 24px;
+}
+
+.sidebar-collapsed .logo-icon-clickable:hover {
+  transform: scale(1.15) rotate(10deg);
+}
+
+/* Indicador visual de que es clickeable */
+.logo-icon-clickable::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.logo-icon-clickable:hover::after {
+  transform: scale(1.2);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Animación del indicador */
+.sidebar-collapsed .logo-icon-clickable::after {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  animation: fadeInText 0.3s ease;
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Remover el botón toggle anterior */
+.btn-toggle-sidebar {
+  display: none;
+}
