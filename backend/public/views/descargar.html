@@ -1,28 +1,395 @@
-<h2>Descargar desde YouTube</h2>
+<div class="descarga-container">
+  <h2 class="page-title">📥 Descargar desde YouTube</h2>
 
-<div class="mb-3">
-  <label>Link de YouTube</label>
-  <input type="text" class="form-control"
-         ng-model="form.youtube_url"
-         placeholder="https://youtube.com/...">
+  <div class="card-descarga">
+    <div class="mb-3">
+      <label class="form-label fw-bold">🔗 Link de YouTube</label>
+      <input type="text" 
+             class="form-control form-control-modern"
+             ng-model="form.youtube_url"
+             placeholder="https://youtube.com/watch?v=...">
+      <small class="text-muted">⚠️ Solo se descargará un video (no playlists completas)</small>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">📝 Nombre del archivo</label>
+      <input type="text" 
+             class="form-control form-control-modern"
+             ng-model="form.nombre"
+             placeholder="Mi canción favorita">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">📀 Formato</label>
+      <select class="form-select form-select-modern" 
+              ng-model="form.formato">
+        <option value="mp3">🎵 MP3 (Solo audio)</option>
+        <option value="mp4">🎬 MP4 (Video)</option>
+        <option value="ambas">📦 Ambas (MP3 + MP4)</option>
+      </select>
+    </div>
+
+    <button class="btn btn-download" 
+            ng-click="descargar()">
+      ⬇️ Iniciar Descarga
+    </button>
+  </div>
+
+  <!-- BOTÓN LIMPIAR COMPLETADAS -->
+  <div class="text-end mb-3" ng-if="descargasActivas.length > 0">
+    <button class="btn btn-sm btn-clean-completed" ng-click="cerrarCompletadas()">
+      🧹 Limpiar completadas
+    </button>
+  </div>
+
+  <!-- LISTA DE DESCARGAS ACTIVAS -->
+  <div class="descargas-activas" ng-if="descargasActivas.length > 0">
+    <h4 class="section-title">📋 Descargas activas</h4>
+
+    <div class="progress-card" ng-repeat="descarga in descargasActivas">
+      <div class="progress-header">
+        <h5 class="progress-title">
+          <span class="progress-icon">
+            <span ng-if="descarga.estado === 'descargando'">📥</span>
+            <span ng-if="descarga.estado === 'completado'">✅</span>
+            <span ng-if="descarga.estado === 'error'">❌</span>
+            <span ng-if="descarga.estado === 'iniciando'">⏳</span>
+          </span>
+          {{ descarga.nombre }}
+        </h5>
+        
+        <div class="header-actions">
+          <span class="progress-badge" ng-class="{
+            'badge-downloading': descarga.estado === 'descargando' || descarga.estado === 'iniciando',
+            'badge-completed': descarga.estado === 'completado',
+            'badge-error': descarga.estado === 'error'
+          }">
+            {{ descarga.estado === 'descargando' ? 'Descargando' : 
+               descarga.estado === 'completado' ? 'Completado' : 
+               descarga.estado === 'error' ? 'Error' : 'Iniciando' }}
+          </span>
+          
+          <!-- Botón cerrar -->
+          <button class="btn-close-descarga" 
+                  ng-click="cerrarDescarga(descarga)"
+                  title="Cerrar">
+            ✖
+          </button>
+        </div>
+      </div>
+
+      <div class="progress-info">
+        <span class="formato-label">{{ descarga.formato.toUpperCase() }}</span>
+        <span class="progreso-porcentaje">{{ descarga.progreso.toFixed(1) }}%</span>
+      </div>
+
+      <!-- Info de playlist si aplica -->
+      <div class="playlist-info" ng-if="descarga.totalItems > 1">
+        <small>
+          📋 Item {{ descarga.itemActual }} de {{ descarga.totalItems }} 
+          ({{ descarga.progresoItem.toFixed(1) }}% del item actual)
+        </small>
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" 
+               ng-style="{'width': descarga.progreso + '%'}"
+               ng-class="{'progress-completed': descarga.estado === 'completado'}">
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-status">
+        <span ng-if="descarga.estado === 'iniciando'">
+          ⏳ Iniciando descarga...
+        </span>
+        <span ng-if="descarga.estado === 'descargando'">
+          📥 Descargando archivo...
+        </span>
+        <span ng-if="descarga.estado === 'completado'">
+          ✅ Descarga completada exitosamente
+        </span>
+        <span ng-if="descarga.estado === 'error'">
+          ❌ Error en la descarga
+        </span>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="mb-3">
-  <label>Nombre del archivo</label>
-  <input type="text" class="form-control"
-         ng-model="form.nombre"
-         placeholder="Mi canción">
-</div>
+<style>
+.descarga-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
 
-<div class="mb-3">
-  <label>Formato</label>
-  <select class="form-select" ng-model="form.formato">
-    <option value="mp3">MP3</option>
-    <option value="mp4">MP4</option>
-    <option value="ambas">Ambas</option>
-  </select>
-</div>
+.card-descarga {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: 2px solid #e2e8f0;
+  margin-bottom: 30px;
+}
 
-<button class="btn btn-primary" ng-click="descargar()">
-  Descargar
-</button>
+.form-control-modern,
+.form-select-modern {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.form-control-modern:focus,
+.form-select-modern:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  outline: none;
+}
+
+.btn-download {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-download:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.btn-clean-completed {
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  color: #4a5568;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-clean-completed:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+  transform: translateY(-2px);
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.descargas-activas {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* BARRA DE PROGRESO */
+.progress-card {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: 2px solid #e2e8f0;
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+  flex: 1;
+}
+
+.progress-icon {
+  font-size: 24px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.progress-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-downloading {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.badge-completed {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+}
+
+.badge-error {
+  background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+  color: white;
+}
+
+.btn-close-descarga {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #edf2f7;
+  color: #718096;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-close-descarga:hover {
+  background: #e53e3e;
+  color: white;
+  transform: scale(1.1) rotate(90deg);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.formato-label {
+  background: #edf2f7;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a5568;
+}
+
+.progreso-porcentaje {
+  font-size: 24px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.playlist-info {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #f7fafc;
+  border-radius: 8px;
+  color: #4a5568;
+  font-size: 13px;
+}
+
+.progress-bar-container {
+  margin-bottom: 12px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.progress-completed {
+  background: linear-gradient(90deg, #48bb78 0%, #38a169 100%) !important;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255,255,255,0.3) 50%, 
+    transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.progress-status {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #718096;
+}
+</style>
